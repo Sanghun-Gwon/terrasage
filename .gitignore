@@ -1,0 +1,18 @@
+# IDE
+.idea/
+*.iml
+
+# Build
+build/
+out/
+target/
+
+# Gradle
+.gradle/
+gradle/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
