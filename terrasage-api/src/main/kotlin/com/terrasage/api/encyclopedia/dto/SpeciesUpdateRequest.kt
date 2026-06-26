@@ -2,6 +2,7 @@ package com.terrasage.api.encyclopedia.dto
 
 import com.terrasage.api.encyclopedia.entity.CitesLevel
 import com.terrasage.api.encyclopedia.entity.DifficultyLevel
+import com.terrasage.api.encyclopedia.entity.SpeciesCategory
 import com.terrasage.api.encyclopedia.entity.SpeciesStatus
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
@@ -51,6 +52,7 @@ data class SpeciesUpdateRequest(
     val avgWeightG: Double? = null,
 
     val difficultyLevel: DifficultyLevel,
+    val category: SpeciesCategory? = null,
     val citesLevel: CitesLevel? = null,
     val legalStatusNote: String? = null,
     val thumbnailUrl: String? = null,

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSpecies, updateSpecies, type SpeciesFormData } from "@/lib/api";
-import type { SpeciesDetail } from "@/types/species";
+import type { SpeciesDetail, SpeciesCategory } from "@/types/species";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ export default function SpeciesForm({ initial }: Props) {
     avgSizeCm: initial?.avgSizeCm ?? undefined,
     avgWeightG: initial?.avgWeightG ?? undefined,
     difficultyLevel: initial?.difficultyLevel ?? "BEGINNER",
+    category: initial?.category ?? "",
     citesLevel: initial?.citesLevel ?? "",
     legalStatusNote: initial?.legalStatusNote ?? "",
     thumbnailUrl: initial?.thumbnailUrl ?? "",
@@ -106,6 +107,28 @@ export default function SpeciesForm({ initial }: Props) {
                 <SelectItem value="BEGINNER">입문</SelectItem>
                 <SelectItem value="INTERMEDIATE">중급</SelectItem>
                 <SelectItem value="ADVANCED">고급</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
+          <FormField label="카테고리">
+            <Select value={form.category ?? ""} onValueChange={(v) => set("category", v === "none" ? "" : v)}>
+              <SelectTrigger><SelectValue placeholder="선택" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">미분류</SelectItem>
+                <SelectItem value="REPTILE">🦎 파충류</SelectItem>
+                <SelectItem value="AMPHIBIAN">🐸 양서류</SelectItem>
+                <SelectItem value="FISH">🐟 어류</SelectItem>
+                <SelectItem value="INVERTEBRATE">🦀 무척추동물</SelectItem>
+                <SelectItem value="MAMMAL">🐹 포유류</SelectItem>
+                <SelectItem value="BIRD">🐦 조류</SelectItem>
+                <SelectItem value="SUCCULENT">🌵 다육식물</SelectItem>
+                <SelectItem value="CACTUS">🌵 선인장</SelectItem>
+                <SelectItem value="ORCHID">🌸 난류</SelectItem>
+                <SelectItem value="FOLIAGE">🌿 관엽식물</SelectItem>
+                <SelectItem value="CARNIVOROUS_PLANT">🪲 식충식물</SelectItem>
+                <SelectItem value="AQUATIC_PLANT">🌊 수생식물</SelectItem>
+                <SelectItem value="BONSAI">🌳 분재</SelectItem>
+                <SelectItem value="OTHER">기타</SelectItem>
               </SelectContent>
             </Select>
           </FormField>

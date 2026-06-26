@@ -15,34 +15,34 @@ class CareGuide(
     val species: Species,
 
     // 사육장 환경
-    val enclosureType: String? = null,
-    val enclosureSizeCm: String? = null,
-    val substrate: String? = null,
+    var enclosureType: String? = null,
+    var enclosureSizeCm: String? = null,
+    var substrate: String? = null,
 
     // 온도 구배 (°C) — 파충류는 핫존/쿨존 온도 차이가 핵심
-    val tempHotZone: Double? = null,
-    val tempCoolZone: Double? = null,
-    val tempNight: Double? = null,
+    var tempHotZone: Double? = null,
+    var tempCoolZone: Double? = null,
+    var tempNight: Double? = null,
 
     // 습도 범위 (%)
-    val humidityMin: Int? = null,
-    val humidityMax: Int? = null,
+    var humidityMin: Int? = null,
+    var humidityMax: Int? = null,
 
     // 조명 설정
-    val uvbRequired: Boolean = false,
-    val photoperiodHours: Int? = null,
+    var uvbRequired: Boolean = false,
+    var photoperiodHours: Int? = null,
 
     // 먹이/영양
-    val feedType: String? = null,
-    val feedFrequency: String? = null,
-    val supplements: String? = null,
+    var feedType: String? = null,
+    var feedFrequency: String? = null,
+    var supplements: String? = null,
 
     // 핸들링 난이도
     @Enumerated(EnumType.STRING)
-    val handlingLevel: HandlingLevel? = null,
+    var handlingLevel: HandlingLevel? = null,
 
     // 합사 가능 여부 및 주의사항
-    val cohabitationNote: String? = null,
+    var cohabitationNote: String? = null,
 
     @Column(nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now(),

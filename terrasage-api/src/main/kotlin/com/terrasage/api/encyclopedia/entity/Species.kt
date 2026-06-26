@@ -63,6 +63,10 @@ class Species(
     var legalStatusNote: String? = null,
     var thumbnailUrl: String? = null,
 
+    // 취미 원예/사육 분류 카테고리 (taxonomy와 별개 — 검색/필터 UI용)
+    @Enumerated(EnumType.STRING)
+    var category: SpeciesCategory? = null,
+
     // 등록 → DRAFT, 관리자 승인 → PUBLISHED
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -48,6 +48,11 @@ object SpeciesSpecification {
                 predicates += cb.equal(root.get<Any>("genus"), it)
             }
 
+            // 카테고리 필터 (REPTILE, SUCCULENT 등)
+            request.category?.let {
+                predicates += cb.equal(root.get<Any>("category"), it)
+            }
+
             // 난이도 필터
             request.difficultyLevel?.let {
                 predicates += cb.equal(root.get<Any>("difficultyLevel"), it)

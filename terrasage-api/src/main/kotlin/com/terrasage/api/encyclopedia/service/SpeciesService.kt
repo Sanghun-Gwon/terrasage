@@ -2,11 +2,17 @@ package com.terrasage.api.encyclopedia.service
 
 import com.terrasage.api.common.exception.DuplicateException
 import com.terrasage.api.common.exception.NotFoundException
+import com.terrasage.api.encyclopedia.dto.CareGuideUpsertRequest
+import com.terrasage.api.encyclopedia.dto.MorphCreateRequest
+import com.terrasage.api.encyclopedia.dto.MorphResponse
+import com.terrasage.api.encyclopedia.dto.CareGuideResponse
 import com.terrasage.api.encyclopedia.dto.SpeciesCreateRequest
 import com.terrasage.api.encyclopedia.dto.SpeciesDetailResponse
 import com.terrasage.api.encyclopedia.dto.SpeciesListResponse
 import com.terrasage.api.encyclopedia.dto.SpeciesSearchRequest
 import com.terrasage.api.encyclopedia.dto.SpeciesUpdateRequest
+import com.terrasage.api.encyclopedia.entity.CareGuide
+import com.terrasage.api.encyclopedia.entity.Morph
 import com.terrasage.api.encyclopedia.repository.CareGuideRepository
 import com.terrasage.api.encyclopedia.repository.MorphRepository
 import com.terrasage.api.encyclopedia.repository.SpeciesRepository
@@ -78,6 +84,7 @@ class SpeciesService(
             avgSizeCm = request.avgSizeCm
             avgWeightG = request.avgWeightG
             difficultyLevel = request.difficultyLevel
+            category = request.category
             citesLevel = request.citesLevel
             legalStatusNote = request.legalStatusNote
             thumbnailUrl = request.thumbnailUrl
@@ -99,5 +106,83 @@ class SpeciesService(
         careGuideRepository.findBySpeciesId(id)?.let { careGuideRepository.delete(it) }
         morphRepository.deleteBySpeciesId(id)
         speciesRepository.deleteById(id)
+    }
+
+    // ── 모프(Morph) ──────────────────────────────────────────
+
+    fun getMorphs(speciesId: Long): List<MorphResponse> {
+        if (!speciesRepository.existsById(speciesId)) throw NotFoundException("Species", speciesId)
+        return morphRepository.findBySpeciesId(speciesId).map { MorphResponse.from(it) }
+    }
+
+    @Transactional
+    fun addMorph(speciesId: Long, request: MorphCreateRequest): MorphResponse {
+        val species = speciesRepository.findById(speciesId)
+            .orElseThrow { NotFoundException("Species", speciesId) }
+        val morph = morphRepository.save(
+            Morph(
+                species = species,
+                name = request.name,
+                geneticPattern = request.geneticPattern,
+                description = request.description,
+                imageUrl = request.imageUrl,
+            )
+        )
+        return MorphResponse.from(morph)
+    }
+
+    @Transactional
+    fun updateMorph(speciesId: Long, morphId: Long, request: MorphCreateRequest): MorphResponse {
+        val morph = morphRepository.findById(morphId)
+            .orElseThrow { NotFoundException("Morph", morphId) }
+        if (morph.species.id != speciesId) throw NotFoundException("Morph", morphId)
+        morph.apply {
+            name = request.name
+            geneticPattern = request.geneticPattern
+            description = request.description
+            imageUrl = request.imageUrl
+        }
+        return MorphResponse.from(morph)
+    }
+
+    @Transactional
+    fun deleteMorph(speciesId: Long, morphId: Long) {
+        val morph = morphRepository.findById(morphId)
+            .orElseThrow { NotFoundException("Morph", morphId) }
+        if (morph.species.id != speciesId) throw NotFoundException("Morph", morphId)
+        morphRepository.delete(morph)
+    }
+
+    // ── 사육가이드(CareGuide) ─────────────────────────────────
+
+    // 없으면 생성, 있으면 전체 필드 덮어씀 (upsert)
+    @Transactional
+    fun upsertCareGuide(speciesId: Long, request: CareGuideUpsertRequest): CareGuideResponse {
+        val species = speciesRepository.findById(speciesId)
+            .orElseThrow { NotFoundException("Species", speciesId) }
+
+        val careGuide = careGuideRepository.findBySpeciesId(speciesId)
+            ?: careGuideRepository.save(CareGuide(species = species))
+
+        careGuide.apply {
+            enclosureType = request.enclosureType
+            enclosureSizeCm = request.enclosureSizeCm
+            substrate = request.substrate
+            tempHotZone = request.tempHotZone
+            tempCoolZone = request.tempCoolZone
+            tempNight = request.tempNight
+            humidityMin = request.humidityMin
+            humidityMax = request.humidityMax
+            uvbRequired = request.uvbRequired
+            photoperiodHours = request.photoperiodHours
+            feedType = request.feedType
+            feedFrequency = request.feedFrequency
+            supplements = request.supplements
+            handlingLevel = request.handlingLevel
+            cohabitationNote = request.cohabitationNote
+            updatedAt = LocalDateTime.now()
+        }
+
+        return CareGuideResponse.from(careGuide)
     }
 }

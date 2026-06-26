@@ -14,13 +14,13 @@ class Morph(
     val species: Species,
 
     @Column(nullable = false)
-    val name: String,
+    var name: String,
 
     // 유전 패턴에 따라 번식 시 발현 확률이 달라짐
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val geneticPattern: GeneticPattern,
+    var geneticPattern: GeneticPattern,
 
-    val description: String? = null,
-    val imageUrl: String? = null,
+    var description: String? = null,
+    var imageUrl: String? = null,
 )

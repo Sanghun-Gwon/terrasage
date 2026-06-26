@@ -44,6 +44,7 @@ export type SpeciesFormData = {
   avgSizeCm?: number;
   avgWeightG?: number;
   difficultyLevel: string;
+  category?: string;
   citesLevel?: string;
   legalStatusNote?: string;
   thumbnailUrl?: string;

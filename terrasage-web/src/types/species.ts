@@ -2,7 +2,13 @@ export type DifficultyLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 export type CitesLevel = "APPENDIX_I" | "APPENDIX_II" | "APPENDIX_III";
 export type SpeciesStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type HandlingLevel = "EASY" | "MODERATE" | "DIFFICULT" | "EXPERT_ONLY";
-export type GeneticPattern = "DOMINANT" | "RECESSIVE" | "CO_DOMINANT" | "LINE_BRED";
+export type GeneticPattern =
+  | "DOMINANT" | "RECESSIVE" | "CO_DOMINANT" | "LINE_BRED"  // 파충류 모프
+  | "CULTIVAR" | "VARIEGATED" | "HYBRID" | "SPORT";           // 식물 품종/변이
+export type SpeciesCategory =
+  | "REPTILE" | "AMPHIBIAN" | "FISH" | "INVERTEBRATE" | "MAMMAL" | "BIRD"
+  | "SUCCULENT" | "CACTUS" | "ORCHID" | "FOLIAGE" | "CARNIVOROUS_PLANT" | "AQUATIC_PLANT" | "BONSAI"
+  | "OTHER";
 
 export interface SpeciesListItem {
   id: number;
@@ -10,6 +16,7 @@ export interface SpeciesListItem {
   commonNameKo: string;
   commonNameEn: string | null;
   thumbnailUrl: string | null;
+  category: SpeciesCategory | null;
   difficultyLevel: DifficultyLevel;
   family: string;
   status: SpeciesStatus;
@@ -59,6 +66,7 @@ export interface SpeciesDetail {
   avgSizeCm: number | null;
   avgWeightG: number | null;
   difficultyLevel: DifficultyLevel;
+  category: SpeciesCategory | null;
   citesLevel: CitesLevel | null;
   legalStatusNote: string | null;
   thumbnailUrl: string | null;

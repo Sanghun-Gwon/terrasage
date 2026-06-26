@@ -1,6 +1,10 @@
 package com.terrasage.api.encyclopedia.controller
 
 import com.terrasage.api.common.response.ApiResponse
+import com.terrasage.api.encyclopedia.dto.CareGuideResponse
+import com.terrasage.api.encyclopedia.dto.CareGuideUpsertRequest
+import com.terrasage.api.encyclopedia.dto.MorphCreateRequest
+import com.terrasage.api.encyclopedia.dto.MorphResponse
 import com.terrasage.api.encyclopedia.dto.SpeciesCreateRequest
 import com.terrasage.api.encyclopedia.dto.SpeciesDetailResponse
 import com.terrasage.api.encyclopedia.dto.SpeciesListResponse
@@ -43,4 +47,43 @@ class AdminSpeciesController(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteSpecies(@PathVariable id: Long) =
         speciesService.deleteSpecies(id)
+
+    // ── 모프(Morph) ──────────────────────────────────────────
+
+    @GetMapping("/{speciesId}/morphs")
+    fun getMorphs(@PathVariable speciesId: Long): ApiResponse<List<MorphResponse>> =
+        ApiResponse.ok(speciesService.getMorphs(speciesId))
+
+    @PostMapping("/{speciesId}/morphs")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun addMorph(
+        @PathVariable speciesId: Long,
+        @Valid @RequestBody request: MorphCreateRequest,
+    ): ApiResponse<MorphResponse> =
+        ApiResponse.ok(speciesService.addMorph(speciesId, request))
+
+    @PutMapping("/{speciesId}/morphs/{morphId}")
+    fun updateMorph(
+        @PathVariable speciesId: Long,
+        @PathVariable morphId: Long,
+        @Valid @RequestBody request: MorphCreateRequest,
+    ): ApiResponse<MorphResponse> =
+        ApiResponse.ok(speciesService.updateMorph(speciesId, morphId, request))
+
+    @DeleteMapping("/{speciesId}/morphs/{morphId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteMorph(
+        @PathVariable speciesId: Long,
+        @PathVariable morphId: Long,
+    ) = speciesService.deleteMorph(speciesId, morphId)
+
+    // ── 사육가이드(CareGuide) ─────────────────────────────────
+
+    // PUT으로 upsert — 없으면 생성, 있으면 전체 수정
+    @PutMapping("/{speciesId}/care-guide")
+    fun upsertCareGuide(
+        @PathVariable speciesId: Long,
+        @RequestBody request: CareGuideUpsertRequest,
+    ): ApiResponse<CareGuideResponse> =
+        ApiResponse.ok(speciesService.upsertCareGuide(speciesId, request))
 }
