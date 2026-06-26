@@ -1,0 +1,115 @@
+---
+title: "사육 관리 모듈 — 사용자 플로우"
+---
+flowchart TD
+    START(("사용자"))
+
+    %% ===== 진입 =====
+    START --> HUSB_HOME["사육 관리 진입<br/>(내 생물 대시보드)"]
+
+    %% ===== 생물 등록 플로우 =====
+    HUSB_HOME --> HAS_ANIMALS{등록된<br/>생물 있음?}
+    HAS_ANIMALS -->|"없음"| EMPTY_STATE["빈 화면<br/>'첫 생물을 등록해보세요'"]
+    HAS_ANIMALS -->|"있음"| ANIMAL_LIST["생물 카드 목록<br/>(사진, 이름, 상태 배지)"]
+
+    EMPTY_STATE --> ADD_ANIMAL["생물 등록"]
+    ANIMAL_LIST --> ADD_ANIMAL
+    ANIMAL_LIST --> SELECT_ANIMAL["생물 선택"]
+    ANIMAL_LIST --> QUICK_FEED["빠른 급이 체크 ✓"]
+
+    ADD_ANIMAL --> REG_SEARCH["종 검색<br/>(백과사전 연동)"]
+    REG_SEARCH --> REG_SELECT_SPECIES["종 선택"]
+    REG_SELECT_SPECIES --> REG_AUTO_CARE["사육가이드 자동 연결<br/>(급이 주기 기본값 세팅)"]
+    REG_AUTO_CARE --> REG_FORM["등록 폼 입력<br/>(이름, 성별, 입양일,<br/>모프, 사진, 체중)"]
+    REG_FORM --> REG_SUBMIT["등록 완료"]
+    REG_SUBMIT --> ANIMAL_DETAIL["생물 상세 페이지"]
+
+    %% ===== 생물 상세 =====
+    SELECT_ANIMAL --> ANIMAL_DETAIL
+    ANIMAL_DETAIL --> TAB{탭 선택}
+
+    TAB -->|"사육 일지"| DIARY["사육 일지"]
+    TAB -->|"환경 로그"| ENV["환경 모니터링"]
+    TAB -->|"성장 기록"| GROWTH["성장 기록"]
+    TAB -->|"건강 기록"| HEALTH["건강/수의 기록"]
+
+    %% 상세에서 바로가기
+    ANIMAL_DETAIL --> QUICK_ACTION{빠른 액션}
+    QUICK_ACTION --> QA_FEED["급이 기록"]
+    QUICK_ACTION --> QA_ENV["환경 기록"]
+    QUICK_ACTION --> QA_MEMO["메모 추가"]
+    QUICK_ACTION --> QA_ENCY["백과사전에서<br/>사육가이드 보기"]
+
+    %% ===== 사육 일지 플로우 =====
+    DIARY --> DIARY_VIEW["타임라인 뷰<br/>(날짜순 기록)"]
+    DIARY --> DIARY_ADD["기록 추가"]
+    DIARY --> DIARY_FILTER["타입별 필터"]
+
+    DIARY_ADD --> DIARY_TYPE{기록 타입?}
+    DIARY_TYPE -->|"급이"| FEED_FORM["먹이 종류, 양,<br/>섭취 여부, 시간"]
+    DIARY_TYPE -->|"탈피"| SHED_FORM["완전/부분/미탈피,<br/>상태 메모"]
+    DIARY_TYPE -->|"배변"| POOP_FORM["상태(정상/이상),<br/>메모"]
+    DIARY_TYPE -->|"수분"| WATER_FORM["급수/분무/목욕"]
+    DIARY_TYPE -->|"메모"| MEMO_FORM["자유 텍스트,<br/>사진 첨부"]
+
+    FEED_FORM --> DIARY_SAVE["기록 저장"]
+    SHED_FORM --> DIARY_SAVE
+    POOP_FORM --> DIARY_SAVE
+    WATER_FORM --> DIARY_SAVE
+    MEMO_FORM --> DIARY_SAVE
+
+    DIARY_SAVE --> CYCLE_CHECK{급이/탈피<br/>주기 업데이트}
+    CYCLE_CHECK --> BADGE_UPDATE["상태 배지 갱신"]
+
+    %% ===== 환경 모니터링 플로우 =====
+    ENV --> ENV_CHART["온/습도 차트<br/>(권장 범위 표시)"]
+    ENV --> ENV_ADD["환경 기록 추가"]
+
+    ENV_ADD --> ENV_FORM["온도(핫존/쿨존),<br/>습도 입력"]
+    ENV_FORM --> ENV_SAVE["기록 저장"]
+    ENV_SAVE --> RANGE_CHECK{권장 범위<br/>이내?}
+    RANGE_CHECK -->|"정상"| ENV_CHART
+    RANGE_CHECK -->|"이탈"| ENV_WARN["⚠ 범위 이탈 경고<br/>(사육가이드 기준 표시)"]
+
+    %% ===== 성장 기록 플로우 =====
+    GROWTH --> GROWTH_CHART["성장 곡선 그래프<br/>(체중/체장)"]
+    GROWTH --> GROWTH_ADD["측정값 추가"]
+
+    GROWTH_ADD --> GROWTH_FORM["날짜, 체중(g),<br/>체장(cm) 입력"]
+    GROWTH_FORM --> GROWTH_SAVE["기록 저장"]
+    GROWTH_SAVE --> GROWTH_CHART
+
+    %% ===== 건강/수의 기록 플로우 =====
+    HEALTH --> HEALTH_LIST["건강 기록 이력"]
+    HEALTH --> HEALTH_ADD["기록 추가"]
+
+    HEALTH_ADD --> HEALTH_TYPE{기록 타입?}
+    HEALTH_TYPE -->|"건강 이상"| SYMPTOM_FORM["증상 선택,<br/>상세 메모, 사진"]
+    HEALTH_TYPE -->|"수의사 방문"| VET_FORM["병원명, 진단,<br/>처방, 비용, 다음방문일"]
+    HEALTH_TYPE -->|"투약"| MED_FORM["약품명, 용량,<br/>주기, 기간"]
+
+    SYMPTOM_FORM --> HEALTH_SAVE["기록 저장"]
+    VET_FORM --> HEALTH_SAVE
+    MED_FORM --> HEALTH_SAVE
+    MED_FORM --> MED_SCHEDULE["투약 일정<br/>캘린더에 등록"]
+
+    %% ===== 캘린더 =====
+    HUSB_HOME --> CALENDAR["사육 캘린더"]
+    CALENDAR --> CAL_VIEW["월간 캘린더 뷰<br/>(전체 생물 통합)"]
+    CALENDAR --> CAL_FILTER{필터}
+    CAL_FILTER -->|"유형별"| CAL_TYPE_FILTER["급이/탈피/수의/투약"]
+    CAL_FILTER -->|"생물별"| CAL_ANIMAL_FILTER["특정 생물만"]
+    CALENDAR --> CAL_ADD["일정 수동 등록<br/>(수의 예약 등)"]
+
+    %% 스타일
+    classDef action fill:#E3F2FD,stroke:#1565C0
+    classDef decision fill:#FFF3E0,stroke:#E65100
+    classDef result fill:#E8F5E9,stroke:#2E7D32
+    classDef warn fill:#FFEBEE,stroke:#C62828
+    classDef form fill:#F3E5F5,stroke:#7B1FA2
+
+    class ADD_ANIMAL,SELECT_ANIMAL,QUICK_FEED,DIARY_ADD,ENV_ADD,GROWTH_ADD,HEALTH_ADD action
+    class HAS_ANIMALS,TAB,QUICK_ACTION,DIARY_TYPE,RANGE_CHECK,HEALTH_TYPE,CAL_FILTER,CYCLE_CHECK decision
+    class REG_SUBMIT,DIARY_SAVE,ENV_SAVE,GROWTH_SAVE,HEALTH_SAVE,BADGE_UPDATE result
+    class ENV_WARN warn
+    class FEED_FORM,SHED_FORM,POOP_FORM,WATER_FORM,MEMO_FORM,ENV_FORM,GROWTH_FORM,SYMPTOM_FORM,VET_FORM,MED_FORM,REG_FORM form

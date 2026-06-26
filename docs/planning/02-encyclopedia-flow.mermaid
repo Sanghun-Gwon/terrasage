@@ -1,0 +1,85 @@
+---
+title: "백과사전 모듈 — 사용자 플로우"
+---
+flowchart TD
+    START(("사용자"))
+
+    %% ===== 생물 탐색 플로우 =====
+    START --> ENCY_ENTRY["백과사전 진입"]
+    ENCY_ENTRY --> SEARCH_OR_BROWSE{탐색 방법?}
+
+    SEARCH_OR_BROWSE -->|"검색"| SEARCH["통합 검색<br/>(학명/일반명/영어명)"]
+    SEARCH_OR_BROWSE -->|"카테고리 탐색"| FILTER["분류 필터<br/>(대분류 → 중분류 → 소분류)"]
+    SEARCH_OR_BROWSE -->|"난이도별"| DIFF_FILTER["난이도 필터<br/>(입문/중급/상급)"]
+
+    SEARCH --> RESULT["검색 결과<br/>(카드 그리드)"]
+    FILTER --> RESULT
+    DIFF_FILTER --> RESULT
+
+    RESULT --> SELECT_SPECIES["종 선택"]
+    RESULT --> BOOKMARK_LIST["북마크 저장"]
+
+    %% ===== 종 프로필 상세 =====
+    SELECT_SPECIES --> PROFILE["종 프로필 상세"]
+    PROFILE --> TAB_SELECT{탭 선택}
+
+    TAB_SELECT -->|"기본정보"| TAB_INFO["기본정보<br/>(분류, 원산지, 크기,<br/>수명, CITES 등급)"]
+    TAB_SELECT -->|"사육가이드"| TAB_CARE["사육 가이드<br/>(온도, 습도, 먹이,<br/>케이지, 조명)"]
+    TAB_SELECT -->|"모프/품종"| TAB_MORPH["모프 목록<br/>(이름, 사진, 유전형)"]
+    TAB_SELECT -->|"Q&A"| TAB_QNA["Q&A 목록"]
+    TAB_SELECT -->|"갤러리"| TAB_GALLERY["사진 갤러리"]
+
+    %% 프로필에서의 액션
+    PROFILE --> ACTION_BOOKMARK["북마크"]
+    PROFILE --> ACTION_SHARE["공유"]
+    PROFILE --> ACTION_REGISTER["내 생물로 등록<br/>(사육관리 연동)"]
+    PROFILE --> ACTION_SUGGEST["정보 수정 제안"]
+
+    %% ===== Q&A 플로우 =====
+    TAB_QNA --> QNA_VIEW["질문 목록 열람"]
+    TAB_QNA --> QNA_ASK["질문 작성"]
+
+    QNA_ASK --> QNA_FORM["질문 폼 작성<br/>(제목, 내용, 사진)"]
+    QNA_FORM --> QNA_SUBMIT["질문 등록"]
+    QNA_SUBMIT --> QNA_POSTED["질문 게시됨"]
+
+    QNA_VIEW --> QNA_DETAIL["질문 상세"]
+    QNA_DETAIL --> QNA_ANSWER["답변 작성"]
+    QNA_DETAIL --> QNA_VOTE["추천/비추천"]
+    QNA_ANSWER --> QNA_ACCEPT{질문자가<br/>채택?}
+    QNA_ACCEPT -->|"예"| QNA_ADOPTED["답변 채택 완료"]
+    QNA_ACCEPT -->|"아니오"| QNA_DETAIL
+
+    %% ===== 갤러리 플로우 =====
+    TAB_GALLERY --> GAL_VIEW["사진 그리드 열람"]
+    TAB_GALLERY --> GAL_UPLOAD["사진 업로드"]
+    GAL_UPLOAD --> GAL_TAG["모프 태그 선택"]
+    GAL_TAG --> GAL_SUBMIT["업로드 완료"]
+    GAL_VIEW --> GAL_LIKE["좋아요"]
+    GAL_VIEW --> GAL_FILTER_MORPH["모프별 필터"]
+
+    %% ===== 정보 기여 플로우 =====
+    ACTION_SUGGEST --> CONTRIB_EDIT["수정 제안 폼<br/>(변경점 입력)"]
+    CONTRIB_EDIT --> CONTRIB_SUBMIT["제출"]
+
+    ENCY_ENTRY --> CONTRIB_NEW["새 종 등록 요청"]
+    CONTRIB_NEW --> CONTRIB_FORM["등록 폼 작성<br/>(학명, 정보, 사진)"]
+    CONTRIB_FORM --> CONTRIB_SUBMIT
+
+    CONTRIB_SUBMIT --> REVIEW_QUEUE["관리자 검수 큐"]
+    REVIEW_QUEUE --> REVIEW_DECIDE{검수 결과}
+    REVIEW_DECIDE -->|"승인"| CONTRIB_APPROVED["정보 반영"]
+    REVIEW_DECIDE -->|"수정 요청"| CONTRIB_REVISE["수정 후 재제출"]
+    REVIEW_DECIDE -->|"반려"| CONTRIB_REJECTED["반려 사유 안내"]
+    CONTRIB_REVISE --> CONTRIB_SUBMIT
+
+    %% 스타일
+    classDef action fill:#E3F2FD,stroke:#1565C0
+    classDef decision fill:#FFF3E0,stroke:#E65100
+    classDef result fill:#E8F5E9,stroke:#2E7D32
+    classDef contribute fill:#F3E5F5,stroke:#7B1FA2
+
+    class SEARCH,FILTER,DIFF_FILTER,SELECT_SPECIES,BOOKMARK_LIST action
+    class SEARCH_OR_BROWSE,TAB_SELECT,QNA_ACCEPT,REVIEW_DECIDE decision
+    class RESULT,PROFILE,TAB_INFO,TAB_CARE,TAB_MORPH,QNA_POSTED,QNA_ADOPTED,GAL_SUBMIT,CONTRIB_APPROVED result
+    class CONTRIB_EDIT,CONTRIB_FORM,CONTRIB_NEW,CONTRIB_SUBMIT,REVIEW_QUEUE contribute

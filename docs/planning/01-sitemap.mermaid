@@ -1,0 +1,67 @@
+---
+title: "TerraSage MVP 사이트맵"
+---
+graph TD
+    ROOT["TerraSage"]
+
+    %% 공통
+    ROOT --> AUTH["인증"]
+    AUTH --> AUTH_LOGIN["로그인"]
+    AUTH --> AUTH_SIGNUP["회원가입"]
+    AUTH --> AUTH_SOCIAL["소셜 로그인<br/>(카카오/구글)"]
+    AUTH --> AUTH_ONBOARD["온보딩<br/>(관심 생물 설정)"]
+
+    ROOT --> HOME["메인 홈<br/>(피드)"]
+
+    %% 백과사전
+    ROOT --> ENCY["백과사전"]
+    ENCY --> ENCY_LIST["생물 목록<br/>(검색/필터)"]
+    ENCY --> ENCY_DETAIL["종 프로필 상세"]
+    ENCY_DETAIL --> ENCY_CARE["사육 가이드 탭"]
+    ENCY_DETAIL --> ENCY_MORPH["모프/품종 탭"]
+    ENCY_DETAIL --> ENCY_QNA["Q&A 탭"]
+    ENCY_DETAIL --> ENCY_GALLERY["갤러리 탭"]
+    ENCY --> ENCY_CONTRIBUTE["정보 기여<br/>(등록/수정 요청)"]
+    ENCY --> ENCY_COMPARE["종 비교<br/>(2차 확장)"]
+
+    %% 사육 관리
+    ROOT --> HUSB["사육 관리"]
+    HUSB --> HUSB_LIST["내 생물 목록"]
+    HUSB --> HUSB_ADD["생물 등록"]
+    HUSB --> HUSB_DETAIL["생물 상세"]
+    HUSB_DETAIL --> HUSB_DIARY["사육 일지"]
+    HUSB_DETAIL --> HUSB_ENV["환경 로그<br/>(온도/습도)"]
+    HUSB_DETAIL --> HUSB_GROWTH["성장 기록<br/>(체중/체장)"]
+    HUSB_DETAIL --> HUSB_HEALTH["건강/수의 기록"]
+    HUSB --> HUSB_CALENDAR["사육 캘린더<br/>(급이/탈피 일정)"]
+
+    %% 커뮤니티 (2차, 간략)
+    ROOT --> COMM["커뮤니티<br/>⟨2차 확장⟩"]
+    COMM --> COMM_BOARD["게시판"]
+    COMM --> COMM_POST["게시글 상세"]
+
+    %% 마켓 (2차, 간략)
+    ROOT --> MARKET["마켓/경매<br/>⟨2차 확장⟩"]
+    MARKET --> MARKET_LIST["상품 목록"]
+    MARKET --> MARKET_DETAIL["상품 상세"]
+    MARKET --> MARKET_AUCTION["경매<br/>⟨3차 확장⟩"]
+
+    %% 마이페이지
+    ROOT --> MY["마이페이지"]
+    MY --> MY_PROFILE["프로필 관리"]
+    MY --> MY_SETTINGS["설정"]
+    MY --> MY_NOTI["알림 센터"]
+
+    %% 스타일
+    classDef mvp fill:#4CAF50,stroke:#2E7D32,color:#fff
+    classDef future fill:#FFB74D,stroke:#F57C00,color:#333
+    classDef core fill:#42A5F5,stroke:#1565C0,color:#fff
+
+    class AUTH,AUTH_LOGIN,AUTH_SIGNUP,AUTH_SOCIAL,AUTH_ONBOARD core
+    class HOME core
+    class ENCY,ENCY_LIST,ENCY_DETAIL,ENCY_CARE,ENCY_MORPH,ENCY_QNA,ENCY_GALLERY,ENCY_CONTRIBUTE mvp
+    class HUSB,HUSB_LIST,HUSB_ADD,HUSB_DETAIL,HUSB_DIARY,HUSB_ENV,HUSB_GROWTH,HUSB_HEALTH,HUSB_CALENDAR mvp
+    class MY,MY_PROFILE,MY_SETTINGS,MY_NOTI core
+    class COMM,COMM_BOARD,COMM_POST future
+    class MARKET,MARKET_LIST,MARKET_DETAIL,MARKET_AUCTION future
+    class ENCY_COMPARE future

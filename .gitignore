@@ -16,3 +16,14 @@ gradle/
 
 # Logs
 *.log
+
+# Kotlin build cache
+.kotlin/
+
+# Next.js
+.next/
+node_modules/
+
+# Env
+.env
+.env.local
