@@ -22,7 +22,7 @@ export interface SpeciesListItem {
   status: SpeciesStatus;
 }
 
-export interface CareGuide {
+export interface AnimalCareGuide {
   enclosureType: string | null;
   enclosureSizeCm: string | null;
   substrate: string | null;
@@ -40,7 +40,25 @@ export interface CareGuide {
   cohabitationNote: string | null;
 }
 
-export interface Morph {
+export interface PlantCareGuide {
+  potType: string | null;
+  growingMedium: string | null;
+  lightRequirement: string | null;
+  lightHoursPerDay: number | null;
+  tempMin: number | null;
+  tempMax: number | null;
+  humidityMin: number | null;
+  humidityMax: number | null;
+  wateringFrequency: string | null;
+  wateringMethod: string | null;
+  fertilizerType: string | null;
+  fertilizerFrequency: string | null;
+  repottingNote: string | null;
+  pruningNote: string | null;
+  overallNote: string | null;
+}
+
+export interface Variant {
   id: number;
   name: string;
   geneticPattern: GeneticPattern;
@@ -71,8 +89,9 @@ export interface SpeciesDetail {
   legalStatusNote: string | null;
   thumbnailUrl: string | null;
   status: SpeciesStatus;
-  careGuide: CareGuide | null;
-  morphs: Morph[];
+  animalCareGuide: AnimalCareGuide | null;
+  plantCareGuide: PlantCareGuide | null;
+  variants: Variant[];
 }
 
 export interface PageResponse<T> {

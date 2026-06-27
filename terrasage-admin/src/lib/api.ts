@@ -7,24 +7,54 @@ import type {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
-// [Security 연동 시]
-// 모든 admin API 요청에 Authorization 헤더 추가 필요:
-//   headers: { Authorization: `Bearer ${getAccessToken()}` }
-// getAccessToken()은 쿠키 또는 메모리에서 JWT를 읽어오는 함수로 구현
+async function adminHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  let token: string | undefined;
+
+  if (typeof window === "undefined") {
+    // 서버 컴포넌트 — next/headers 쿠키에서 읽기
+    const { cookies } = await import("next/headers");
+    const store = await cookies();
+    token = store.get("terrasage_token")?.value;
+  } else {
+    // 클라이언트 컴포넌트 — 브라우저 쿠키에서 읽기
+    const { getToken } = await import("@/lib/auth");
+    token = getToken() ?? undefined;
+  }
+
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+}
+
+async function handleResponse<T>(res: Response): Promise<T> {
+  if (res.status === 401) {
+    if (typeof window === "undefined") {
+      const { redirect } = await import("next/navigation");
+      redirect("/login");
+    } else {
+      window.location.href = "/login";
+      throw new Error("로그인이 필요합니다");
+    }
+  }
+  const json: ApiResponse<T> = await res.json();
+  if (!json.success || !json.data) throw new Error(json.error?.message ?? "API error");
+  return json.data as T;
+}
 
 export async function getSpeciesList(page = 0, size = 20): Promise<PageResponse<SpeciesListItem>> {
-  // 관리자 전용 엔드포인트 — 모든 상태(DRAFT/PUBLISHED/ARCHIVED) 조회
-  const res = await fetch(`${API_URL}/api/v1/admin/species?page=${page}&size=${size}`);
-  const json: ApiResponse<PageResponse<SpeciesListItem>> = await res.json();
-  if (!json.success || !json.data) throw new Error(json.error?.message ?? "API error");
-  return json.data;
+  const res = await fetch(`${API_URL}/api/v1/admin/species?page=${page}&size=${size}`, {
+    headers: await adminHeaders(),
+    cache: "no-store",
+  });
+  return handleResponse(res);
 }
 
 export async function getSpeciesDetail(id: number): Promise<SpeciesDetail> {
-  const res = await fetch(`${API_URL}/api/v1/species/${id}`);
-  const json: ApiResponse<SpeciesDetail> = await res.json();
-  if (!json.success || !json.data) throw new Error(json.error?.message ?? "API error");
-  return json.data;
+  const res = await fetch(`${API_URL}/api/v1/species/${id}`, {
+    headers: await adminHeaders(),
+    cache: "no-store",
+  });
+  return handleResponse(res);
 }
 
 export type SpeciesFormData = {
@@ -54,28 +84,25 @@ export type SpeciesFormData = {
 export async function createSpecies(data: SpeciesFormData): Promise<SpeciesDetail> {
   const res = await fetch(`${API_URL}/api/v1/admin/species`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: await adminHeaders(),
     body: JSON.stringify(data),
   });
-  const json: ApiResponse<SpeciesDetail> = await res.json();
-  if (!json.success || !json.data) throw new Error(json.error?.message ?? "등록 실패");
-  return json.data;
+  return handleResponse(res);
 }
 
 export async function updateSpecies(id: number, data: SpeciesFormData & { status: string }): Promise<SpeciesDetail> {
   const res = await fetch(`${API_URL}/api/v1/admin/species/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: await adminHeaders(),
     body: JSON.stringify(data),
   });
-  const json: ApiResponse<SpeciesDetail> = await res.json();
-  if (!json.success || !json.data) throw new Error(json.error?.message ?? "수정 실패");
-  return json.data;
+  return handleResponse(res);
 }
 
 export async function deleteSpecies(id: number): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/admin/species/${id}`, {
     method: "DELETE",
+    headers: await adminHeaders(),
   });
   if (!res.ok) throw new Error("삭제 실패");
 }

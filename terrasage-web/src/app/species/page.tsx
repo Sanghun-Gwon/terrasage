@@ -20,14 +20,14 @@ const DIFFICULTY_COLOR: Record<DifficultyLevel, string> = {
 export default async function SpeciesListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ keyword?: string; taxonomyClass?: string; difficultyLevel?: string; page?: string }>;
+  searchParams: Promise<{ keyword?: string; category?: string; difficultyLevel?: string; page?: string }>;
 }) {
   const params = await searchParams;
   const currentPage = Number(params.page ?? 0);
 
   const data = await getSpeciesList({
     keyword: params.keyword,
-    taxonomyClass: params.taxonomyClass,
+    category: params.category,
     difficultyLevel: params.difficultyLevel as DifficultyLevel | undefined,
     page: currentPage,
     size: 12,
@@ -46,13 +46,25 @@ export default async function SpeciesListPage({
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-green-500"
         />
         <select
-          name="taxonomyClass"
-          defaultValue={params.taxonomyClass}
+          name="category"
+          defaultValue={params.category}
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         >
-          <option value="">전체 분류</option>
-          <option value="Reptilia">파충류 (Reptilia)</option>
-          <option value="Amphibia">양서류 (Amphibia)</option>
+          <option value="">전체 카테고리</option>
+          <optgroup label="동물">
+            <option value="REPTILE">🦎 파충류</option>
+            <option value="AMPHIBIAN">🐸 양서류</option>
+            <option value="FISH">🐟 어류</option>
+          </optgroup>
+          <optgroup label="식물">
+            <option value="SUCCULENT">🌵 다육식물</option>
+            <option value="CACTUS">🌵 선인장</option>
+            <option value="ORCHID">🌸 난류</option>
+            <option value="FOLIAGE">🌿 관엽식물</option>
+            <option value="CARNIVOROUS_PLANT">🪲 식충식물</option>
+            <option value="AQUATIC_PLANT">🌊 수생식물</option>
+            <option value="BONSAI">🌳 분재</option>
+          </optgroup>
         </select>
         <select
           name="difficultyLevel"
@@ -70,7 +82,7 @@ export default async function SpeciesListPage({
         >
           검색
         </button>
-        {(params.keyword || params.taxonomyClass || params.difficultyLevel) && (
+        {(params.keyword || params.category || params.difficultyLevel) && (
           <a href="/species" className="px-4 py-2 text-sm text-gray-500 hover:text-gray-800">
             초기화
           </a>

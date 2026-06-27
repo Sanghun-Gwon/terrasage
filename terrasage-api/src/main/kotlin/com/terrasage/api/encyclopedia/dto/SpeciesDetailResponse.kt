@@ -2,7 +2,6 @@ package com.terrasage.api.encyclopedia.dto
 
 import com.terrasage.api.encyclopedia.entity.*
 
-// 종 상세 조회 응답 — CareGuide, Morph 목록 포함
 data class SpeciesDetailResponse(
     val id: Long,
     val scientificName: String,
@@ -26,14 +25,16 @@ data class SpeciesDetailResponse(
     val legalStatusNote: String?,
     val thumbnailUrl: String?,
     val status: SpeciesStatus,
-    val careGuide: CareGuideResponse?,
-    val morphs: List<MorphResponse>,
+    val animalCareGuide: AnimalCareGuideResponse?,
+    val plantCareGuide: PlantCareGuideResponse?,
+    val variants: List<VariantResponse>,
 ) {
     companion object {
         fun from(
             species: Species,
-            careGuide: CareGuide?,
-            morphs: List<Morph>,
+            animalCareGuide: AnimalCareGuide?,
+            plantCareGuide: PlantCareGuide?,
+            variants: List<Variant>,
         ) = SpeciesDetailResponse(
             id = species.id,
             scientificName = species.scientificName,
@@ -57,8 +58,9 @@ data class SpeciesDetailResponse(
             legalStatusNote = species.legalStatusNote,
             thumbnailUrl = species.thumbnailUrl,
             status = species.status,
-            careGuide = careGuide?.let { CareGuideResponse.from(it) },
-            morphs = morphs.map { MorphResponse.from(it) },
+            animalCareGuide = animalCareGuide?.let { AnimalCareGuideResponse.from(it) },
+            plantCareGuide = plantCareGuide?.let { PlantCareGuideResponse.from(it) },
+            variants = variants.map { VariantResponse.from(it) },
         )
     }
 }
