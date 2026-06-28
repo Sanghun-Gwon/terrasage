@@ -31,7 +31,8 @@ dependencies {
     testImplementation("io.mockk:mockk:1.14.3")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation("org.testcontainers:postgresql")
+    // Testcontainers 2.x: PostgreSQLContainer 제거됨 → GenericContainer 사용
+    testRuntimeOnly("org.postgresql:postgresql")
 }
 
 tasks.withType<Test> {

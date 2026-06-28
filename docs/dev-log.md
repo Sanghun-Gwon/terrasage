@@ -214,9 +214,112 @@ Kotlin 2.x에서 KAPT 지원이 불안정해질 예정.
 
 ---
 
+---
+
+## 2026-06 세션 3 — 테스트 코드 작성 및 Spring Security 7.x 이슈 해결
+
+### 1. 테스트 구성
+
+#### 단위 테스트 (MockK)
+| 파일 | 테스트 수 | 내용 |
+|------|-----------|------|
+| `AuthServiceTest` | 7 | signup/login 시나리오, 예외 케이스 |
+| `PostServiceTest` | 10 | 게시글 CRUD, 권한 검사, 좋아요, 댓글 |
+
+#### 통합 테스트 (Testcontainers + RestTestClient)
+| 파일 | 테스트 수 | 내용 |
+|------|-----------|------|
+| `AuthApiTest` | 6 | 회원가입/로그인 HTTP API |
+| `CommunityApiTest` | 11 | 게시글/댓글/좋아요 HTTP API |
+| `SpeciesApiTest` | 6 | 종 조회, Admin API 인가 |
+
+**총 40개 테스트 전체 통과**
+
+---
+
+### 2. Testcontainers 2.x 마이그레이션
+
+Spring Boot 4.1.0이 Testcontainers 2.x를 사용. 1.x와 API 차이 있음.
+
+| 항목 | 1.x | 2.x |
+|------|-----|-----|
+| PostgreSQL 모듈 | `org.testcontainers:postgresql` | 제거됨 |
+| PostgreSQL 컨테이너 | `PostgreSQLContainer()` | `GenericContainer("postgres:16")` |
+| JUnit 연동 | `@Testcontainers` + `@Container` | 제거됨 |
+| 컨테이너 시작 | 자동 (JUnit extension) | `companion object { ... .start() }` |
+
+```kotlin
+// ✅ Testcontainers 2.x 패턴
+companion object {
+    private val postgres: GenericContainer<*> = GenericContainer("postgres:16").apply {
+        withExposedPorts(5432)
+        withEnv("POSTGRES_DB", "terrasage_test")
+        withEnv("POSTGRES_USER", "test")
+        withEnv("POSTGRES_PASSWORD", "test")
+        waitingFor(Wait.forListeningPort())
+        start()  // JVM shutdown hook으로 자동 종료
+    }
+
+    @DynamicPropertySource
+    @JvmStatic
+    fun configureDataSource(registry: DynamicPropertyRegistry) {
+        registry.add("spring.datasource.url") {
+            "jdbc:postgresql://localhost:${postgres.getMappedPort(5432)}/terrasage_test"
+        }
+    }
+}
+```
+
+---
+
+### 3. TestRestTemplate → RestTestClient
+
+Spring Boot 4.x에서 `TestRestTemplate` 제거됨. 대체재: `RestTestClient` (Spring 7.x 신규).
+
+```kotlin
+// build.gradle.kts — 별도 의존성 불필요 (spring-boot-starter-test 내 포함)
+
+// 테스트 클라이언트 초기화
+@BeforeEach
+fun initClient() {
+    client = RestTestClient.bindToServer()
+        .baseUrl("http://localhost:$port")
+        .build()
+}
+
+// 요청/응답 패턴
+import org.springframework.test.web.servlet.client.expectBody  // Kotlin reified extension
+
+val data = client.post().uri("/api/v1/auth/login")
+    .contentType(MediaType.APPLICATION_JSON)
+    .body(mapOf("email" to email, "password" to password))  // bodyValue()가 아닌 body()
+    .exchange()
+    .expectStatus().isOk
+    .expectBody<Map<String, Any>>()
+    .returnResult().responseBody!!
+```
+
+---
+
+### 4. Spring Security 7.x STATELESS 환경 이슈 (핵심)
+
+자세한 내용: [troubleshooting.md](./troubleshooting.md)
+
+#### 이슈 1: `getContext().authentication = auth` 동작 안 함
+
+STATELESS 세션에서 `SecurityContextHolder.getContext()`는 호출마다 새 인스턴스를 반환.
+→ `SecurityContextHolder.setContext(newContext)`로 교체해야 이후 필터에 전달됨.
+
+#### 이슈 2: `response.sendError()` → `/error` 재진입 → 401
+
+`accessDeniedHandler`에서 `sendError(403)`을 호출하면 `/error`로 포워드.
+`/error`가 `permitAll()` 처리 안 되어 있으면 새 Security 체인 실행 → anonymous → 401.
+→ 직접 JSON 응답 작성으로 해결.
+
+---
+
 ## 다음 작업 목록
 
-- [ ] 테스트 코드 (Testcontainers + JUnit 5 + MockK)
 - [ ] 회원가입 페이지 (terrasage-web)
 - [ ] 커뮤니티 페이지 — 수정/삭제 버튼 (작성자 본인만)
 - [ ] 내 프로필 페이지

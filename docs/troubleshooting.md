@@ -31,6 +31,8 @@
 8. [DB 스키마 변경 시 볼륨 리셋 필요](#8-db-스키마-변경-시-볼륨-리셋-필요)
 9. [리팩토링 후 구 변수명 참조로 서버 500 에러](#9-리팩토링-후-구-변수명-참조로-서버-500-에러)
 10. [백그라운드 셸 환경에서 npm PATH 누락](#10-백그라운드-셸-환경에서-npm-path-누락)
+11. [Spring Security 7.x - STATELESS 환경에서 SecurityContext 설정 무효화](#11-spring-security-7x---stateless-환경에서-securitycontext-설정-무효화)
+12. [Spring Security 7.x - sendError()가 /error 재진입 유발](#12-spring-security-7x---senderror가-error-재진입-유발)
 
 ---
 
@@ -225,6 +227,98 @@ ReferenceError: cg is not defined
 
 **교훈**  
 큰 리팩토링 후에는 dev 서버를 수동으로 재시작하여 확인.
+
+---
+
+---
+
+## 11. Spring Security 7.x - STATELESS 환경에서 SecurityContext 설정 무효화
+
+**증상**
+
+JWT 토큰 검증은 성공(`valid=true`)하지만 Spring Security가 anonymous로 처리하여 401 반환.
+
+```
+DEBUG JwtAuthFilter: JWT token present, valid=true, uri=/api/v1/admin/species
+DEBUG AnonymousAuthenticationFilter: Set SecurityContextHolder to anonymous SecurityContext
+< 401 UNAUTHORIZED
+```
+
+**원인**
+
+Spring Security 7.x의 STATELESS 세션 환경에서 `SecurityContextHolder.getContext()`는 `DeferredSecurityContext`를 통해 동작한다. `getContext()`를 호출할 때마다 새 `SecurityContext` 인스턴스를 반환할 수 있다.
+
+```kotlin
+// ❌ 동작 안 함 — 호출마다 다른 인스턴스가 반환될 수 있음
+SecurityContextHolder.getContext().authentication = auth
+```
+
+JwtAuthFilter에서 설정한 authentication이 AnonymousAuthenticationFilter가 읽는 다른 인스턴스에는 반영되지 않음.
+
+**해결**
+
+`setContext()`로 thread-local의 SecurityContext를 완전히 교체:
+
+```kotlin
+// ✅ 올바른 방법
+val context = SecurityContextHolder.createEmptyContext()
+context.authentication = auth
+SecurityContextHolder.setContext(context)
+```
+
+**교훈**
+
+Spring Security 6+ STATELESS 환경에서 JWT 필터 구현 시 `getContext().authentication =` 방식 대신 반드시 `setContext()`를 사용한다. Spring Security 공식 예제도 이 방식을 사용한다.
+
+---
+
+## 12. Spring Security 7.x - sendError()가 /error 재진입 유발
+
+**증상**
+
+`accessDeniedHandler`에서 `sendError(403)`을 호출했는데 클라이언트가 401을 받음.
+
+```
+DEBUG FilterChainProxy: Securing POST /api/v1/admin/species
+DEBUG JwtAuthFilter: JWT token present, valid=true
+DEBUG FilterChainProxy: Securing GET /error       ← 포워드 발생
+DEBUG AnonymousAuthenticationFilter: Set SecurityContextHolder to anonymous SecurityContext
+< 401 UNAUTHORIZED
+```
+
+**원인**
+
+`HttpServletResponse.sendError(403)`은 클라이언트에 즉시 응답하지 않고, 서블릿 컨테이너에게 `/error` 경로로 내부 포워드(forward)를 요청한다.
+
+포워드된 `/error` 요청은 Spring Security 필터 체인을 처음부터 다시 탄다. 이때 Authorization 헤더가 없으므로 anonymous 처리되고, `/error`가 `permitAll()`로 설정되지 않아 `authenticationEntryPoint` → 401이 반환됨.
+
+**해결**
+
+`exceptionHandling` 핸들러에서 직접 JSON 응답을 작성하여 포워드를 방지:
+
+```kotlin
+// SecurityConfig.kt
+
+private fun HttpServletResponse.writeJson(status: Int, code: String, message: String) {
+    this.status = status
+    contentType = MediaType.APPLICATION_JSON_VALUE
+    writer.write("""{"success":false,"data":null,"error":{"code":"$code","message":"$message"}}""")
+}
+
+// filterChain 내부
+.exceptionHandling { ex ->
+    ex.authenticationEntryPoint { _, response, _ ->
+        response.writeJson(HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다")
+    }
+    ex.accessDeniedHandler { _, response, _ ->
+        response.writeJson(HttpServletResponse.SC_FORBIDDEN, "FORBIDDEN", "권한이 없습니다")
+    }
+}
+```
+
+**교훈**
+
+Spring Boot 환경에서 Security 핸들러에서 `sendError()`를 사용하면 항상 `/error` 포워드가 발생한다. 직접 응답을 작성하거나, `/error`를 `permitAll()`로 추가해야 한다.
 
 ---
 

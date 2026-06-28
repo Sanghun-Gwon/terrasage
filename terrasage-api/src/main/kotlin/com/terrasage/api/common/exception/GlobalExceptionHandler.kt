@@ -32,6 +32,12 @@ class GlobalExceptionHandler {
         return ApiResponse.fail("VALIDATION_ERROR", message)
     }
 
+    // 403 — 권한 없음
+    @ExceptionHandler(ForbiddenException::class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    fun handleForbiddenException(e: ForbiddenException): ApiResponse<Nothing> =
+        ApiResponse.fail(e.code, e.message ?: "Forbidden")
+
     // 400 — 기타 비즈니스 예외 (TerrasageException 하위 클래스)
     @ExceptionHandler(TerrasageException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

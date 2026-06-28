@@ -1,8 +1,10 @@
 package com.terrasage.api.common.security
 
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -15,10 +17,16 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
+private fun HttpServletResponse.writeJson(status: Int, code: String, message: String) {
+    this.status = status
+    contentType = MediaType.APPLICATION_JSON_VALUE
+    writer.write("""{"success":false,"data":null,"error":{"code":"$code","message":"$message"}}""")
+}
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
+class SecurityConfig(private val jwtProvider: JwtProvider) {
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain =
@@ -28,24 +36,25 @@ class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    // 인증 없이 접근 가능
                     .requestMatchers("/api/v1/auth/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/species/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/species").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/posts").permitAll()
-                    // Admin 전용
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                    // 나머지는 인증 필요
                     .anyRequest().authenticated()
             }
             .exceptionHandling { ex ->
-                // 인증 없음 → 401, 권한 부족 → 403
+                // sendError()는 /error로 포워드하여 Security 필터 체인을 다시 탄다.
+                // 직접 응답 작성으로 포워드 없이 즉시 반환.
                 ex.authenticationEntryPoint { _, response, _ ->
-                    response.sendError(401, "Unauthorized")
+                    response.writeJson(HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다")
+                }
+                ex.accessDeniedHandler { _, response, _ ->
+                    response.writeJson(HttpServletResponse.SC_FORBIDDEN, "FORBIDDEN", "권한이 없습니다")
                 }
             }
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(JwtAuthFilter(jwtProvider), UsernamePasswordAuthenticationFilter::class.java)
             .build()
 
     @Bean

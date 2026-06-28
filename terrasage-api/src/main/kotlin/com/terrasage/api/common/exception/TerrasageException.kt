@@ -13,3 +13,7 @@ class NotFoundException(resource: String, id: Any) :
 // 유니크 제약 위반 (HTTP 409)
 class DuplicateException(resource: String) :
     TerrasageException("DUPLICATE", "${resource}이(가) 이미 존재합니다")
+
+// 권한 없음 (HTTP 403)
+class ForbiddenException(message: String = "권한이 없습니다") :
+    TerrasageException("FORBIDDEN", message)

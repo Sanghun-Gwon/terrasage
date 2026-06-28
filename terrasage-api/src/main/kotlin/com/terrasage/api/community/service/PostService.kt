@@ -9,6 +9,7 @@ import com.terrasage.api.community.entity.PostLike
 import com.terrasage.api.community.repository.CommentRepository
 import com.terrasage.api.community.repository.PostLikeRepository
 import com.terrasage.api.community.repository.PostRepository
+import com.terrasage.api.common.exception.ForbiddenException
 import com.terrasage.api.common.exception.NotFoundException
 import com.terrasage.api.common.exception.TerrasageException
 import org.springframework.data.domain.Page
@@ -63,7 +64,7 @@ class PostService(
     @Transactional
     fun updatePost(id: Long, email: String, request: PostUpdateRequest): PostDetailResponse {
         val post = postRepository.findById(id).orElseThrow { NotFoundException("Post", id) }
-        if (post.author.email != email) throw TerrasageException("FORBIDDEN", "수정 권한이 없습니다")
+        if (post.author.email != email) throw ForbiddenException("수정 권한이 없습니다")
 
         post.title = request.title
         post.content = request.content
@@ -77,7 +78,7 @@ class PostService(
     @Transactional
     fun deletePost(id: Long, email: String, isAdmin: Boolean) {
         val post = postRepository.findById(id).orElseThrow { NotFoundException("Post", id) }
-        if (!isAdmin && post.author.email != email) throw TerrasageException("FORBIDDEN", "삭제 권한이 없습니다")
+        if (!isAdmin && post.author.email != email) throw ForbiddenException("삭제 권한이 없습니다")
 
         postLikeRepository.deleteAllByPostId(id)
         commentRepository.deleteAllByPostId(id)
@@ -98,7 +99,7 @@ class PostService(
     @Transactional
     fun deleteComment(postId: Long, commentId: Long, email: String, isAdmin: Boolean) {
         val comment = commentRepository.findById(commentId).orElseThrow { NotFoundException("Comment", commentId) }
-        if (!isAdmin && comment.author.email != email) throw TerrasageException("FORBIDDEN", "삭제 권한이 없습니다")
+        if (!isAdmin && comment.author.email != email) throw ForbiddenException("삭제 권한이 없습니다")
         commentRepository.delete(comment)
     }
 
