@@ -20,7 +20,7 @@ const MENUS = [
     icon: "🌡️",
     title: "사육환경 관리",
     desc: "온도·습도·먹이 기록 및 시각화",
-    available: false,
+    available: true,
   },
   {
     href: "/health",
