@@ -1,11 +1,10 @@
 package com.terrasage.api.auth.service
 
-import com.terrasage.api.auth.dto.LoginRequest
-import com.terrasage.api.auth.dto.LoginResponse
-import com.terrasage.api.auth.dto.SignupRequest
+import com.terrasage.api.auth.dto.*
 import com.terrasage.api.auth.entity.User
 import com.terrasage.api.auth.repository.UserRepository
 import com.terrasage.api.common.exception.DuplicateException
+import com.terrasage.api.common.exception.NotFoundException
 import com.terrasage.api.common.exception.TerrasageException
 import com.terrasage.api.common.security.JwtProvider
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -49,5 +48,27 @@ class AuthService(
             name = user.name,
             role = user.role,
         )
+    }
+
+    fun getMyProfile(email: String): MyProfileResponse {
+        val user = userRepository.findByEmail(email) ?: throw NotFoundException("User", email)
+        return MyProfileResponse.from(user)
+    }
+
+    @Transactional
+    fun updateProfile(email: String, request: UpdateProfileRequest): MyProfileResponse {
+        val user = userRepository.findByEmail(email) ?: throw NotFoundException("User", email)
+        user.name = request.name
+        user.phoneNumber = request.phoneNumber?.replace(Regex("[- ]"), "")
+        return MyProfileResponse.from(user)
+    }
+
+    @Transactional
+    fun changePassword(email: String, request: ChangePasswordRequest) {
+        val user = userRepository.findByEmail(email) ?: throw NotFoundException("User", email)
+        if (!passwordEncoder.matches(request.currentPassword, user.password)) {
+            throw TerrasageException("INVALID_CREDENTIALS", "현재 비밀번호가 올바르지 않습니다")
+        }
+        user.password = passwordEncoder.encode(request.newPassword)!!
     }
 }

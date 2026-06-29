@@ -17,11 +17,11 @@ class User(
     var password: String,
 
     @Column(nullable = false)
-    val name: String,
+    var name: String,
 
     @Convert(converter = EncryptedStringConverter::class)
     @Column(nullable = true)
-    val phoneNumber: String? = null,
+    var phoneNumber: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

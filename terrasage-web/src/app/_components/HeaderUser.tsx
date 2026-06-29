@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getToken, removeToken, decodeTokenPayload } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { getToken, decodeTokenPayload } from "@/lib/auth";
+import Link from "next/link";
 
 export default function HeaderUser() {
-  const router = useRouter();
   const [name, setName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -16,22 +15,13 @@ export default function HeaderUser() {
     }
   }, []);
 
-  function logout() {
-    removeToken();
-    router.push("/login");
-  }
-
   if (!name) return null;
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <span className="text-gray-600">{name}</span>
-      <button
-        onClick={logout}
-        className="text-gray-400 hover:text-red-500 transition-colors"
-      >
-        로그아웃
-      </button>
+      <Link href="/me" className="text-gray-600 hover:text-green-700 transition-colors">
+        {name}
+      </Link>
     </div>
   );
 }
