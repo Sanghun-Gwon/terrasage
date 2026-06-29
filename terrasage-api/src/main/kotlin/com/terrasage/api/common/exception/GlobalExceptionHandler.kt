@@ -47,6 +47,8 @@ class GlobalExceptionHandler {
     // 500 — 예상치 못한 서버 오류
     @ExceptionHandler(Exception::class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    fun handleException(e: Exception): ApiResponse<Nothing> =
-        ApiResponse.fail("INTERNAL_ERROR", "서버 오류가 발생했습니다")
+    fun handleException(e: Exception): ApiResponse<Nothing> {
+        org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler::class.java).error("Unhandled exception", e)
+        return ApiResponse.fail("INTERNAL_ERROR", "서버 오류가 발생했습니다")
+    }
 }

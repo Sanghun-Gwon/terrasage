@@ -195,3 +195,58 @@ FROM (VALUES
 JOIN post p ON p.title = v.post_title
 JOIN users u ON u.email = v.email
 WHERE NOT EXISTS (SELECT 1 FROM comment c WHERE c.post_id = p.id AND c.author_id = u.id AND c.content = v.content);
+
+-- ──────────────────────────────────────────────────────
+-- 사육환경 관리 샘플 데이터 (카테고리별 개체 + 기록)
+--   user@terrasage.com 계정 기준
+--   카테고리: REPTILE, AMPHIBIAN, SUCCULENT(식물), AQUATIC_PLANT(수생식물)
+-- ──────────────────────────────────────────────────────
+
+-- 개체 등록
+INSERT INTO animals (owner_id, species_id, species_name, name, nickname, birth_date, gender, notes, is_public, created_at, updated_at)
+SELECT u.id, s.id, NULL, v.name, v.nickname, v.birth_date::date, v.gender, v.notes, true,
+       NOW() - (v.days_ago || ' days')::interval, NOW()
+FROM (VALUES
+    ('user@terrasage.com', 'Eublepharis macularius', '레오 #1',     '콩이', '2023-03-15', 'FEMALE',  '하이 옐로우 모프. 식욕 왕성함.', '30'),
+    ('user@terrasage.com', 'Ambystoma mexicanum',    '아홀로 #1',   '무지', '2024-01-20', 'MALE',    '루시스틱. 수질 관리 중요.', '20'),
+    ('user@terrasage.com', 'Echeveria laui',          '에케베리아 #1', NULL,  '2023-06-01', 'UNKNOWN', '분갈이 후 뿌리 안착 중.', '10'),
+    ('user@terrasage.com', 'Microsorum pteropus',     '자바펀 #1',   NULL,  NULL,         'UNKNOWN', '수조 후경에 고정. CO2 주입 중.', '5')
+) AS v(email, scientific_name, name, nickname, birth_date, gender, notes, days_ago)
+JOIN users u ON u.email = v.email
+JOIN species s ON s.scientific_name = v.scientific_name
+WHERE NOT EXISTS (
+    SELECT 1 FROM animals a WHERE a.owner_id = u.id AND a.name = v.name
+);
+
+-- 사육 기록 (개체별 3~5개, 차트 표시용)
+INSERT INTO care_records (animal_id, recorded_at, temperature, humidity, light_hours, weight, feed_type, feed_amount, notes, created_at)
+SELECT a.id,
+       NOW() - (v.days_ago || ' days')::interval,
+       v.temperature, v.humidity, v.light_hours, v.weight, v.feed_type, v.feed_amount, v.notes,
+       NOW()
+FROM (VALUES
+    -- 레오 #1 (파충류 — 온도/습도/체중 추이 확인)
+    ('레오 #1', '12', 31.5, 34.0, 12.0,  61.0, '귀뚜라미', '5마리', NULL),
+    ('레오 #1', '9',  32.0, 35.0, 12.0,  62.5, '두비아',   '4마리', '식욕 좋음'),
+    ('레오 #1', '6',  32.5, 36.0, 12.0,  63.0, '귀뚜라미', '5마리', '탈피 준비 중'),
+    ('레오 #1', '3',  31.0, 33.0, 12.0,  64.5, '두비아',   '4마리', '탈피 완료'),
+    ('레오 #1', '0',  32.0, 35.0, 12.0,  65.0, '귀뚜라미', '5마리', NULL),
+    -- 아홀로 #1 (양서류 — 수온/체중)
+    ('아홀로 #1', '10', 18.5, NULL, NULL, 182.0, '냉동 장구벌레', '5ml', '수질 정상'),
+    ('아홀로 #1', '7',  18.0, NULL, NULL, 185.0, '지렁이',        '1마리', NULL),
+    ('아홀로 #1', '4',  17.5, NULL, NULL, 187.0, '냉동 장구벌레', '5ml', '수질 양호'),
+    ('아홀로 #1', '1',  18.0, NULL, NULL, 190.0, '지렁이',        '1마리', NULL),
+    -- 에케베리아 #1 (식물 — 온도/습도/광량)
+    ('에케베리아 #1', '14', 24.0, 45.0, 8.0, NULL, '물주기', '저면관수', NULL),
+    ('에케베리아 #1', '10', 25.0, 42.0, 8.0, NULL, NULL,     NULL,     '새 잎 확인'),
+    ('에케베리아 #1', '6',  23.0, 50.0, 8.0, NULL, '물주기', '저면관수', '겉흙 건조 후 급수'),
+    ('에케베리아 #1', '2',  24.5, 44.0, 8.0, NULL, NULL,     NULL,     '성장 양호'),
+    -- 자바펀 #1 (수생식물 — 수온/광량)
+    ('자바펀 #1', '8', 25.0, NULL, 10.0, NULL, NULL, NULL, 'CO2 주입 정상'),
+    ('자바펀 #1', '5', 25.5, NULL, 10.0, NULL, NULL, NULL, '수초 비료 소량 첨가'),
+    ('자바펀 #1', '2', 24.5, NULL, 10.0, NULL, NULL, NULL, '성장 양호, 새 잎 전개')
+) AS v(animal_name, days_ago, temperature, humidity, light_hours, weight, feed_type, feed_amount, notes)
+JOIN animals a ON a.name = v.animal_name
+WHERE NOT EXISTS (
+    SELECT 1 FROM care_records cr WHERE cr.animal_id = a.id
+);

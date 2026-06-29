@@ -20,12 +20,14 @@ class AnimalService(
     private val speciesRepository: SpeciesRepository,
 ) {
 
+    @Transactional(readOnly = true)
     fun getMyAnimals(email: String): List<AnimalResponse> {
         val user = userRepository.findByEmail(email) ?: throw NotFoundException("User", email)
         return animalRepository.findAllByOwnerIdOrderByCreatedAtDesc(user.id)
             .map { AnimalResponse.from(it) }
     }
 
+    @Transactional(readOnly = true)
     fun getAnimal(id: Long, email: String): AnimalResponse {
         val animal = findAnimalOrThrow(id)
         if (!animal.isPublic && animal.owner.email != email) throw ForbiddenException()
@@ -82,6 +84,7 @@ class AnimalService(
 
     // ── CareRecord ──────────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     fun getRecords(animalId: Long, email: String): List<CareRecordResponse> {
         val animal = findAnimalOrThrow(animalId)
         if (!animal.isPublic && animal.owner.email != email) throw ForbiddenException()

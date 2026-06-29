@@ -29,7 +29,7 @@ jwt:
 # 운영: ENCRYPT_SECRET, ENCRYPT_SALT 환경변수로 반드시 교체
 encrypt:
   secret: ${ENCRYPT_SECRET:terrasage-dev-encrypt-secret-key}
-  salt: ${ENCRYPT_SALT:6163653536643234}  # hex 8바이트 이상
+  salt: ${ENCRYPT_SALT:6163653536643234}
 
 logging:
   level:
