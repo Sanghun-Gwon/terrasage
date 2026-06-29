@@ -1,5 +1,6 @@
 package com.terrasage.api.auth.entity
 
+import com.terrasage.api.common.config.EncryptedStringConverter
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -18,6 +19,7 @@ class User(
     @Column(nullable = false)
     val name: String,
 
+    @Convert(converter = EncryptedStringConverter::class)
     @Column(nullable = true)
     val phoneNumber: String? = null,
 

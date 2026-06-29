@@ -25,6 +25,12 @@ jwt:
   secret: ${JWT_SECRET:terrasage-dev-secret-key-must-be-at-least-32-bytes-long}
   expiration-ms: 3600000  # 1시간
 
+# 개인정보(전화번호 등) AES-256-GCM 암호화
+# 운영: ENCRYPT_SECRET, ENCRYPT_SALT 환경변수로 반드시 교체
+encrypt:
+  secret: ${ENCRYPT_SECRET:terrasage-dev-encrypt-secret-key}
+  salt: ${ENCRYPT_SALT:6163653536643234}  # hex 8바이트 이상
+
 logging:
   level:
     com.terrasage: DEBUG

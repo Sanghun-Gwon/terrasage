@@ -5,3 +5,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop   # 테스트 실행마다 스키마 재생성
+
+encrypt:
+  secret: test-encrypt-secret-key
+  salt: "6163653536643234"
