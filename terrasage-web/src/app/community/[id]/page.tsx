@@ -6,6 +6,7 @@ import { getPostDetail } from "@/lib/api";
 import { BOARD_LABEL, BOARD_COLOR } from "@/types/community";
 import LikeButton from "./_components/LikeButton";
 import CommentSection from "./_components/CommentSection";
+import PostActionButtons from "./_components/PostActionButtons";
 
 function relativeTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -48,8 +49,11 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         {/* 제목 */}
         <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
 
-        {/* 작성자 */}
-        <p className="text-sm text-gray-500 mb-5">{post.authorName}</p>
+        {/* 작성자 + 수정/삭제 버튼 */}
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm text-gray-500">{post.authorName}</p>
+          <PostActionButtons postId={post.id} authorEmail={post.authorEmail} />
+        </div>
 
         {/* 이미지 (있을 때만) */}
         {post.imageUrls.length > 0 && (
