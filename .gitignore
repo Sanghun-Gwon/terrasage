@@ -27,3 +27,7 @@ node_modules/
 # Env
 .env
 .env.local
+
+# Spring 로컬 설정 (민감한 키값은 여기에)
+application-local.yml
+**/application-local.yml
