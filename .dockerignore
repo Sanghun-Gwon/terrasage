@@ -1,0 +1,10 @@
+.gradle/
+.kotlin/
+.claude/
+docs/
+**/.git/
+**/node_modules/
+**/.next/
+**/build/
+**/dist/
+*.md
