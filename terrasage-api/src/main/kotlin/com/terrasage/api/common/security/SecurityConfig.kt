@@ -1,6 +1,7 @@
 package com.terrasage.api.common.security
 
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -26,7 +27,13 @@ private fun HttpServletResponse.writeJson(status: Int, code: String, message: St
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-class SecurityConfig(private val jwtProvider: JwtProvider) {
+class SecurityConfig(
+    private val jwtProvider: JwtProvider,
+    // 쉼표로 구분된 허용 출처 목록 (로컬 기본값 포함)
+    // 운영: CORS_ALLOWED_ORIGINS=https://terrasage.com,https://terrasage-web-xxxx.run.app
+    @Value("\${cors.allowed-origins:http://localhost:3000,http://localhost:3001}")
+    private val allowedOriginsRaw: String,
+) {
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain =
@@ -62,10 +69,12 @@ class SecurityConfig(private val jwtProvider: JwtProvider) {
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
+        val allowedOrigins = allowedOriginsRaw.split(",").map { it.trim() }
         val config = CorsConfiguration().apply {
-            allowedOrigins = listOf("http://localhost:3000", "http://localhost:3001")
+            this.allowedOrigins = allowedOrigins
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
+            // 모바일 앱(네이티브)은 credentials 불필요 — 웹만 true
             allowCredentials = true
         }
         return UrlBasedCorsConfigurationSource().apply {
