@@ -29,6 +29,7 @@ class AuthService(
                 email = request.email,
                 password = passwordEncoder.encode(request.password)!!,
                 name = request.name,
+                phoneNumber = request.phoneNumber,
             )
         )
     }

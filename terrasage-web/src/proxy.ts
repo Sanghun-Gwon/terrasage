@@ -4,11 +4,13 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get("terrasage_token");
   const { pathname } = request.nextUrl;
 
-  if (!token && pathname !== "/login") {
+  const publicPaths = ["/login", "/signup"];
+
+  if (!token && !publicPaths.includes(pathname)) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (token && pathname === "/login") {
+  if (token && publicPaths.includes(pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

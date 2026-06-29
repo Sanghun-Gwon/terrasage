@@ -18,6 +18,9 @@ class User(
     @Column(nullable = false)
     val name: String,
 
+    @Column(nullable = true)
+    val phoneNumber: String? = null,
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val role: UserRole = UserRole.USER,
