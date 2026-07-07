@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16
+    image: postgres:18
     container_name: terrasage-postgres
     environment:
       POSTGRES_DB: terrasage
@@ -9,7 +9,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      # postgres:18+ 이미지는 PGDATA가 /var/lib/postgresql/<major>/docker로 변경됨
+      # → 마운트 지점도 /var/lib/postgresql/data가 아닌 /var/lib/postgresql
+      - postgres-data:/var/lib/postgresql
 
 volumes:
   postgres-data:

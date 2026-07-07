@@ -22,7 +22,7 @@ import org.testcontainers.containers.wait.strategy.Wait
 abstract class IntegrationTestBase {
 
     companion object {
-        private val postgres: GenericContainer<*> = GenericContainer("postgres:16").apply {
+        private val postgres: GenericContainer<*> = GenericContainer("postgres:18").apply {
             withExposedPorts(5432)
             withEnv("POSTGRES_DB", "terrasage_test")
             withEnv("POSTGRES_USER", "test")
