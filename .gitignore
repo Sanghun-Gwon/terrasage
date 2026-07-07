@@ -9,7 +9,6 @@ target/
 
 # Gradle
 .gradle/
-gradle/
 
 # OS
 .DS_Store
