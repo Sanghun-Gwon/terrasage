@@ -7,6 +7,11 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 COPY . .
+
+# NEXT_PUBLIC_* 값은 빌드 시점에 클라이언트 번들로 인라인되므로 build-arg로 주입
+ARG NEXT_PUBLIC_API_URL=http://localhost:8080
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 RUN npm run build
 
 # ── Stage 2: Runtime ─────────────────────────────────────────────────────────
