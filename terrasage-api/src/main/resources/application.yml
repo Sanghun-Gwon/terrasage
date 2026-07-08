@@ -33,6 +33,11 @@ encrypt:
   secret: ${ENCRYPT_SECRET:terrasage-dev-encrypt-secret-key}
   salt: ${ENCRYPT_SALT:6163653536643234}
 
+# GCS 이미지 버킷 — Signed URL 업로드 방식
+# 로컬에서 발급 테스트하려면 GOOGLE_APPLICATION_CREDENTIALS(서비스 계정 키) 필요
+gcs:
+  bucket: ${GCS_BUCKET:terrasage-dev-images}
+
 # CORS 허용 출처 — 쉼표 구분
 # 운영: CORS_ALLOWED_ORIGINS=https://terrasage.com,https://terrasage-web-xxxx.run.app
 cors:

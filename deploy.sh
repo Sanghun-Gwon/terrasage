@@ -42,7 +42,7 @@ deploy_api() {
     --allow-unauthenticated \
     --max-instances 1 \
     --memory 1Gi \
-    --set-env-vars "SPRING_PROFILES_ACTIVE=prod" \
+    --set-env-vars "SPRING_PROFILES_ACTIVE=prod,GCS_BUCKET=terrasage-prod-2026-images" \
     --set-secrets \
       "DATABASE_URL=TERRASAGE_DATABASE_URL:latest,\
 JWT_SECRET=TERRASAGE_JWT_SECRET:latest,\

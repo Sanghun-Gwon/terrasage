@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getToken } from "@/lib/auth";
+import ImageUploadField from "@/app/_components/ImageUploadField";
 import type { BoardType } from "@/types/community";
 import { BOARD_LABEL } from "@/types/community";
 
@@ -16,18 +17,9 @@ export default function NewPostPage() {
   const [boardType, setBoardType] = useState<BoardType>("FREE");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [imageInput, setImageInput] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  function addImage() {
-    const url = imageInput.trim();
-    if (url && !imageUrls.includes(url)) {
-      setImageUrls((prev) => [...prev, url]);
-      setImageInput("");
-    }
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -119,48 +111,12 @@ export default function NewPostPage() {
           />
         </div>
 
-        {/* 이미지 URL (SHOWCASE에서 강조) */}
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
-            이미지 URL
-            {boardType === "SHOWCASE" && (
-              <span className="ml-2 text-xs font-normal text-violet-600">개체 자랑 게시글에 이미지를 추가해보세요</span>
-            )}
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={imageInput}
-              onChange={(e) => setImageInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addImage())}
-              placeholder="https://..."
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <button
-              type="button"
-              onClick={addImage}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:border-green-400 transition-colors"
-            >
-              추가
-            </button>
-          </div>
-          {imageUrls.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {imageUrls.map((url, i) => (
-                <div key={i} className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-xs text-gray-600">
-                  <span className="truncate max-w-[200px]">{url}</span>
-                  <button
-                    type="button"
-                    onClick={() => setImageUrls((prev) => prev.filter((_, j) => j !== i))}
-                    className="text-gray-400 hover:text-red-500 ml-1"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* 이미지 업로드 (SHOWCASE에서 강조) */}
+        <ImageUploadField
+          imageUrls={imageUrls}
+          onChange={setImageUrls}
+          hint={boardType === "SHOWCASE" ? "개체 자랑 게시글에 이미지를 추가해보세요" : undefined}
+        />
 
         {/* 제출 */}
         <div className="flex gap-3 pt-2">

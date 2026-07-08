@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { getToken } from "@/lib/auth";
+import ImageUploadField from "@/app/_components/ImageUploadField";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
@@ -14,7 +15,6 @@ export default function EditPostPage() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [imageInput, setImageInput] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,14 +33,6 @@ export default function EditPostPage() {
       .catch(() => router.push("/community"))
       .finally(() => setLoading(false));
   }, [postId, router]);
-
-  function addImage() {
-    const url = imageInput.trim();
-    if (url && !imageUrls.includes(url)) {
-      setImageUrls((prev) => [...prev, url]);
-      setImageInput("");
-    }
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -110,42 +102,7 @@ export default function EditPostPage() {
           />
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">이미지 URL</label>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={imageInput}
-              onChange={(e) => setImageInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addImage())}
-              placeholder="https://..."
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <button
-              type="button"
-              onClick={addImage}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:border-green-400 transition-colors"
-            >
-              추가
-            </button>
-          </div>
-          {imageUrls.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {imageUrls.map((url, i) => (
-                <div key={i} className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-xs text-gray-600">
-                  <span className="truncate max-w-[200px]">{url}</span>
-                  <button
-                    type="button"
-                    onClick={() => setImageUrls((prev) => prev.filter((_, j) => j !== i))}
-                    className="text-gray-400 hover:text-red-500 ml-1"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ImageUploadField imageUrls={imageUrls} onChange={setImageUrls} />
 
         <div className="flex gap-3 pt-2">
           <Link
