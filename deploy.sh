@@ -94,10 +94,16 @@ deploy_web() {
 # ── CORS 갱신 ─────────────────────────────────────────────────────────────────
 # web URL이 배포 후에야 확정되므로, 시크릿 갱신 → API 새 리비전으로 반영
 update_cors() {
-  local web
+  local web project_number web_deterministic origins
   web=$(web_url)
-  echo "▶ CORS 허용 출처 갱신: $web"
-  echo -n "$web" | gcloud secrets versions add TERRASAGE_CORS_ALLOWED_ORIGINS \
+  # Cloud Run은 레거시(랜덤 해시)와 결정적(프로젝트 번호) URL 두 개를 가짐.
+  # 브라우저 Origin은 접속한 URL 그대로이므로 둘 다 허용해야 함.
+  project_number=$(gcloud projects describe "$GCP_PROJECT" --format 'value(projectNumber)')
+  web_deterministic="https://${WEB_SERVICE}-${project_number}.${GCP_REGION}.run.app"
+  origins="$web"
+  [ "$web" != "$web_deterministic" ] && origins="$web,$web_deterministic"
+  echo "▶ CORS 허용 출처 갱신: $origins"
+  echo -n "$origins" | gcloud secrets versions add TERRASAGE_CORS_ALLOWED_ORIGINS \
     --data-file=- --project "$GCP_PROJECT"
   # :latest 시크릿은 인스턴스 기동 시점에 읽히므로 새 리비전 생성이 필요
   gcloud run services update "$API_SERVICE" \
